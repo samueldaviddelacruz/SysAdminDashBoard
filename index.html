@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+  <head>
+    <title>DashBoard</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+    </style>
+
+    <script src="/socket.io/socket.io.js"> </script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+
+ <script>
+ var socket = io();
+function getTotalNumberOfCPU(){   
+ $.get('cpucount',function(cpuCount){
+    // console.log(cpuCount.count)
+    initCpuChart(cpuCount.count);
+    initRamChart();
+ })
+}
+     $(function(){
+      getTotalNumberOfCPU();             
+     }
+)
+
+
+
+
+function initCpuChart(cpuCount){
+  $('#CPUcontainer').highcharts({
+        chart: {
+            type: 'column'
+        },
+        title: {
+            text: 'CPU USAGE'
+        },
+        xAxis: {
+            categories: []
+        },
+        yAxis: {
+            allowDecimals: false,
+            min: 0,
+            max:100,
+            title: {
+                text: '% Used'
+            }
+        },
+        tooltip: {
+            formatter: function () {
+                return '<b>' + this.x + '</b><br/>' +
+                    this.series.name + ': ' + this.y + '<br/>' +
+                    'Total: ' + this.point.stackTotal;
+            }
+        },
+        plotOptions: {
+            column: {
+                stacking: 'normal'
+            }
+        },
+    });
+
+    addSeriesToChart(cpuCount);
+    
+}
+
+
+function initRamChart(){
+  $('#RAMcontainer').highcharts({
+        chart: {
+            type: 'column'
+        },
+        title: {
+            text: 'RAM USAGE'
+        },
+        xAxis: {
+            categories: ['RAM']
+        },
+        yAxis: {
+            allowDecimals: false,
+            min: 0,
+            max:100,
+            title: {
+                text: '% Used'
+            }
+        },
+        tooltip: {
+            formatter: function () {
+                return '<b>' + this.x + '</b><br/>' +
+                    this.series.name + ': ' + this.y + '<br/>' +
+                    'Total: ' + this.point.stackTotal;
+            }
+        },
+        plotOptions: {
+            column: {
+                stacking: 'normal'
+            }
+        },
+        series:[{
+            name:'RAM',
+            data:[0]
+        }]
+    });
+
+}
+
+
+
+
+
+function getCpuChart(){
+    return $('#CPUcontainer').highcharts();
+}
+function getRamChart(){
+    return $('#RAMcontainer').highcharts();
+}
+
+function addSeriesToChart(cpuCount){
+
+    for(var i =1;i <= cpuCount;i++){
+            var chart = getCpuChart();
+            var cpuName = 'CPU '+i;
+            chart.xAxis[0].categories.push(cpuName);
+            chart.addSeries({
+                name: cpuName,
+                data: [0],
+                stack: cpuName
+            });
+        }
+startListeningToSockets(cpuCount);
+}
+
+function startListeningToSockets(cpuCount){
+
+    for(var index = 0;index < cpuCount;index++){
+       var cpuName = 'CPU'+index
+           console.log(cpuName)
+    socket.on('CPU'+index,function(cpuData){
+       console.log(cpuData.usedPercent)
+            getCpuChart().series[cpuData.cpu].update({
+                        data:[cpuData.usedPercent] 
+                })
+        });
+    }
+    socket.on('RAMusagePercent',function(ramData){
+        getRamChart().series[0].update({
+            data:[ramData]
+        })
+    });
+
+
+}
+ 
+</script>
+
+  </head>
+  <body>
+    <div id="CPUcontainer" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+   <div id="RAMcontainer" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+  </body>
+</html>
