@@ -92,7 +92,7 @@ function startListeningToCPUSockets(cpuCount){
 for(var index = 0;index < cpuCount;index++){
        var cpuName = 'CPU'+index
 
-    socket.on('CPU'+index,function(cpuData){
+    socket.on(index,function(cpuData){
 
             getCpuChart().series[cpuData.cpu].update({
                         data:[cpuData.usedPercent] 

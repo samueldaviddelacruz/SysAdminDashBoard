@@ -97,7 +97,7 @@ function StartEmitting(interval){
                 usedPercent: cpuTimediff
             }
             console.log("emitting CPU%d info on socket CPU%d:", cpuData.cpu,cpuData.cpu);
-            io.emit('CPU' + cpuData.cpu, cpuData)
+            io.emit(cpuData.cpu, cpuData)
         });
         oldcpus = os.cpus();
     }
