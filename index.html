@@ -18,7 +18,11 @@
     <script src="https://code.highcharts.com/highcharts.js"></script>
 
  <script>
- var socket = io();
+var socket = io('http://localhost:3000');
+  $(function(){
+      getTotalNumberOfCPU();  
+      getAvailableDisks();           
+     });
 function getTotalNumberOfCPU(){   
  $.get('cpucount',function(cpuCount){
     // console.log(cpuCount.count)
@@ -26,10 +30,14 @@ function getTotalNumberOfCPU(){
     initRamChart();
  })
 }
-     $(function(){
-      getTotalNumberOfCPU();             
-     }
-)
+function getAvailableDisks(){   
+ $.get('availableDisks',function(disks){
+     initDisksChart(disks);
+     console.log(disks);  
+ })
+}
+   
+        
 
 
 
@@ -67,10 +75,32 @@ function initCpuChart(cpuCount){
         },
     });
 
-    addSeriesToChart(cpuCount);
+    addSeriestoCpuChart(cpuCount);
     
 }
+function addSeriestoCpuChart(cpuCount){
 
+    for(var i =1;i <= cpuCount;i++){
+            var chart = getCpuChart();
+            var Name = 'CPU '+i;
+            addSeriestoChart({name:Name,data:[0],stack:Name},chart)   
+        }
+     startListeningToCPUSockets(cpuCount);
+}
+
+function startListeningToCPUSockets(cpuCount){
+for(var index = 0;index < cpuCount;index++){
+       var cpuName = 'CPU'+index
+
+    socket.on('CPU'+index,function(cpuData){
+
+            getCpuChart().series[cpuData.cpu].update({
+                        data:[cpuData.usedPercent] 
+                })
+        });
+    }
+
+}
 
 function initRamChart(){
   $('#RAMcontainer').highcharts({
@@ -108,10 +138,72 @@ function initRamChart(){
             data:[0]
         }]
     });
-
+    startListeningToRAMSocket();
 }
 
+function startListeningToRAMSocket(){
+    socket.on('RAMusagePercent',function(ramData){
+        getRamChart().series[0].update({
+            data:[ramData]
+        })
+    });
+}
 
+function initDisksChart(disks){
+  $('#Diskscontainer').highcharts({
+        chart: {
+            type: 'column'
+        },
+        title: {
+            text: 'DISKS USAGE'
+        },
+        xAxis: {
+            categories: []
+        },
+        yAxis: {
+            allowDecimals: false,
+            min: 0,
+            max:100,
+            title: {
+                text: '% Used'
+            }
+        },
+        tooltip: {
+            formatter: function () {
+                return '<b>' + this.x + '</b><br/>' +
+                    this.series.name + ': ' + this.y + '<br/>' +
+                    'Total: ' + this.point.stackTotal;
+            }
+        },
+        plotOptions: {
+            column: {
+                stacking: 'normal'
+            }
+        },
+    });
+
+    addSeriestoDisksChart(disks);
+    
+}
+function addSeriestoDisksChart(disks){
+
+    for(var i = 1;i <= disks.length;i++){
+            var chart = getDisksChart();
+            var Name = disks[i-1].mountpoint.split(',')[0];
+            addSeriestoChart({name:Name,data:[0],stack:Name},chart)   
+        }
+     startListeningToDiskSockets(disks);
+}
+
+function startListeningToDiskSockets(disks){
+        disks.forEach(function(disk,i){
+        var mountPoint = disk.mountpoint.split(',')[0];
+            socket.on(mountPoint,function(diskData){
+                getDisksChart().series[i].update({data:[diskData]})
+                console.log(diskData);
+            })
+        })
+}
 
 
 
@@ -121,41 +213,12 @@ function getCpuChart(){
 function getRamChart(){
     return $('#RAMcontainer').highcharts();
 }
-
-function addSeriesToChart(cpuCount){
-
-    for(var i =1;i <= cpuCount;i++){
-            var chart = getCpuChart();
-            var cpuName = 'CPU '+i;
-            chart.xAxis[0].categories.push(cpuName);
-            chart.addSeries({
-                name: cpuName,
-                data: [0],
-                stack: cpuName
-            });
-        }
-startListeningToSockets(cpuCount);
+function getDisksChart(){
+    return $('#Diskscontainer').highcharts();
 }
-
-function startListeningToSockets(cpuCount){
-
-    for(var index = 0;index < cpuCount;index++){
-       var cpuName = 'CPU'+index
-           console.log(cpuName)
-    socket.on('CPU'+index,function(cpuData){
-       console.log(cpuData.usedPercent)
-            getCpuChart().series[cpuData.cpu].update({
-                        data:[cpuData.usedPercent] 
-                })
-        });
-    }
-    socket.on('RAMusagePercent',function(ramData){
-        getRamChart().series[0].update({
-            data:[ramData]
-        })
-    });
-
-
+function addSeriestoChart(seriesObject,chart){
+            chart.xAxis[0].categories.push(seriesObject.name);
+            chart.addSeries(seriesObject);
 }
  
 </script>
@@ -163,7 +226,8 @@ function startListeningToSockets(cpuCount){
   </head>
   <body>
     <div id="CPUcontainer" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
-   <div id="RAMcontainer" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+    <div id="RAMcontainer" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+    <div id="Diskscontainer" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
 
   </body>
 </html>

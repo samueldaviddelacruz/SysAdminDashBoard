@@ -3,6 +3,8 @@
   "version": "0.0.1",
   "description": "my first socket.io app",
   "dependencies": {
+    "diskspace": "^1.0.3",
+    "drivelist": "^3.2.2",
     "express": "^4.10.2",
     "highcharts": "^4.2.5",
     "nanotimer": "^0.3.14",
