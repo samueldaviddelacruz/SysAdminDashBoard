@@ -1,10 +1,12 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var WebSocketServer = require('websocket').server;
 var os = require('os');
 var drivelist = require('drivelist');
 var diskspace = require('diskspace');
 var oldcpus = os.cpus();
+var connections = [];
 var currentdisks = []
 var _interval = 1;
 var TOTAL_PERCENT = 100;
@@ -30,17 +32,68 @@ app.get('/', function(req, res){
 });
 
    http.listen(3000, function(){
+       
 
     StartEmitting(interval);   
+    initclassicWs();
     io.on('connection',function(socket){
 
     socket.on('disconnect',function(){
         //console.log('socket %s has disconnected' .socket.id);
      
         });
-    });      
+    }); 
+
+              
 });
 
+
+
+}
+
+function initclassicWs(){
+var server = require('http').createServer(function(request, response) {
+    console.log((new Date()) + ' Received request for ' + request.url);
+    response.writeHead(404);
+    response.end();
+});
+server.listen(3500, function() {
+    console.log((new Date()) + ' Server is listening on port 3500');
+});
+
+wsServer = new WebSocketServer({
+    httpServer: server,
+    // You should not use autoAcceptConnections for production 
+    // applications, as it defeats all standard cross-origin protection 
+    // facilities built into the protocol and the browser.  You should 
+    // *always* verify the connection's origin and decide whether or not 
+    // to accept it. 
+    autoAcceptConnections: false
+});
+
+wsServer.on('request',function(request){
+console.log(request);
+    var connection = request.accept('echo-protocol', request.origin);
+    connections.push(connection);
+    console.log((new Date()) + ' Connection accepted.');
+    connection.on('message', function(message) {
+        if (message.type === 'utf8') {
+            console.log('Received Message: ' + message.utf8Data);
+            connection.sendUTF(message.utf8Data);
+        }
+        else if (message.type === 'binary') {
+            console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
+            connection.sendBytes(message.binaryData);
+        }
+    });
+
+    connection.on('close', function(reasonCode, description) {
+        console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+        //implement removal of connection here
+    });
+
+    
+})
 }
 function StartEmitting(interval){
     console.log('one single interval run, start emitting signals!');
@@ -96,19 +149,32 @@ function StartEmitting(interval){
                 cpu: (cpuIndex),
                 usedPercent: cpuTimediff
             }
-            console.log("emitting CPU%d info on socket CPU%d:", cpuData.cpu,cpuData.cpu);
+            //console.log("emitting CPU%d info on socket CPU%d:", cpuData.cpu,cpuData.cpu);
             io.emit(cpuData.cpu, cpuData)
+
+           connections.forEach(function(connection){
+             // console.log(connection);
+                    if(connection){
+                        connection.sendUTF("CPU"+cpuData.cpu+":"+cpuData.usedPercent);
+                    }
+            });
+
         });
         oldcpus = os.cpus();
     }
     function emitRaminfoThroughSocket(){
-      io.emit('RAMusagePercent', calculateUsedMemoryPercent())   
+      io.emit('RAMusagePercent', calculateUsedMemoryPercent())
+      connections.forEach(function(connection){
+            if(connection){
+             connection.sendUTF("RAMusagePercent:"+calculateUsedMemoryPercent());
+            }
+      });
     }
     function calculateUsedMemoryPercent(){
    
         var freeMemoryPercent = (( os.freemem()  / os.totalmem())*100)
         var usedMemorypercent =  TOTAL_PERCENT - freeMemoryPercent
-            console.log("memory used percent %d %:",usedMemorypercent)
+           // console.log("memory used percent %d %:",usedMemorypercent)
    return usedMemorypercent;
     }
 
@@ -116,7 +182,7 @@ function StartEmitting(interval){
 
         currentdisks.forEach(function(disk){
         var mountPath = disk.mountpoint.split(',')[0];
-        console.log(mountPath);
+        
         diskspace.check(mountPath, function (err, total, free, status)
           {
               if(err){
@@ -125,7 +191,8 @@ function StartEmitting(interval){
               var freeDiskPercent = (free / total)*100
               var usedDiskSpacePercent = TOTAL_PERCENT - freeDiskPercent;
               io.emit(mountPath,usedDiskSpacePercent);
-             console.log('used space for drive %s %d %',mountPath,usedDiskSpacePercent);                          
+         
+             //console.log('used space for drive %s %d %',mountPath,usedDiskSpacePercent);                          
           });
            
         });
