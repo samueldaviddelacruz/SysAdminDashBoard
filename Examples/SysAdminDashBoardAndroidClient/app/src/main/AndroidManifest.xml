@@ -18,7 +18,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".DashBoardMenu"></activity>
+        <activity android:name=".DashBoardMenu" />
+        <activity android:name=".CpuMonitorActivity"></activity>
     </application>
 
 </manifest>

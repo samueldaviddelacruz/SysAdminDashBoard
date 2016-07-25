@@ -23,6 +23,7 @@ public class RamMonitorActivity extends AppCompatActivity {
     BarData data;
     WebSocketManager WSManager;
     String Address;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

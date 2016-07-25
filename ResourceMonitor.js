@@ -144,22 +144,24 @@ function StartEmitting(interval){
 
     function emitCPUInfoThroughSocket(){
         var CPUsTimeDiffs = calculateCPUsTimeDiffs();
+        var cpusArray = [];
         CPUsTimeDiffs.forEach(function (cpuTimediff, cpuIndex) {
             var cpuData = {
                 cpu: (cpuIndex),
                 usedPercent: cpuTimediff
             }
+            cpusArray.push(cpuData);
             //console.log("emitting CPU%d info on socket CPU%d:", cpuData.cpu,cpuData.cpu);
             io.emit(cpuData.cpu, cpuData)
+        });
 
-           connections.forEach(function(connection){
+         connections.forEach(function(connection){
              // console.log(connection);
+                  
                     if(connection){
-                        connection.sendUTF("CPU"+cpuData.cpu+":"+cpuData.usedPercent);
+                        connection.sendUTF(JSON.stringify({CPUDATA:cpusArray}));
                     }
             });
-
-        });
         oldcpus = os.cpus();
     }
     function emitRaminfoThroughSocket(){

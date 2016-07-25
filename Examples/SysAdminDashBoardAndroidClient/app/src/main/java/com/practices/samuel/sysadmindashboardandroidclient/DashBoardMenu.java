@@ -22,17 +22,21 @@ public class DashBoardMenu extends AppCompatActivity implements View.OnClickList
         btnRam = (Button)findViewById(R.id.RAMbtn);
         btnCPU = (Button)findViewById(R.id.CPUbtn);
         btnRam.setOnClickListener(this);
-
+        btnCPU.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View view) {
-
+        Intent myIntent;
         switch(view.getId()){
             case R.id.RAMbtn:
-                Intent myIntent = new Intent(DashBoardMenu.this,RamMonitorActivity.class);
+                myIntent = new Intent(DashBoardMenu.this,RamMonitorActivity.class);
                 myIntent.putExtra("SERVER_ADDRESS",getIntent().getStringExtra("SERVER_ADDRESS"));
-                Log.d("button pressed","button clicked!");
+                startActivity(myIntent);
+                break;
+            case R.id.CPUbtn:
+                myIntent = new Intent(DashBoardMenu.this,CpuMonitorActivity.class);
+                myIntent.putExtra("SERVER_ADDRESS",getIntent().getStringExtra("SERVER_ADDRESS"));
                 startActivity(myIntent);
                 break;
         }
