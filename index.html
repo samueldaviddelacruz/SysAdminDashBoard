@@ -34,7 +34,8 @@ function getAvailableDisks(){
     $.get('/availableDisks', function (response) {
         console.log(response);
 
-        if (!response.error) {
+        if (!response.error && response.disks) {
+
             initDisksChart(response.disks);
         }
  })
