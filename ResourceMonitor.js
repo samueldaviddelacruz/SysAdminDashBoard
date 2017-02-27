@@ -8,6 +8,7 @@ var diskspace = require('diskspace');
 var oldcpus = os.cpus();
 var connections = [];
 var currentdisks = [];
+const port = (process.env.PORT || 5000);
 var _interval = 1;
 var TOTAL_PERCENT = 100;
 (function (ResourceMonitor) {
@@ -31,7 +32,7 @@ app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
 
-   http.listen(3000, function(){
+    http.listen(port, function () {
        
 
     StartEmitting(interval);   
@@ -57,8 +58,8 @@ var server = require('http').createServer(function(request, response) {
     response.writeHead(404);
     response.end();
 });
-server.listen(3500, function() {
-    console.log((new Date()) + ' Server is listening on port 3500');
+    server.listen(port, function () {
+        console.log((new Date()) + ' Server is listening on port ' + port);
 });
 
 wsServer = new WebSocketServer({
