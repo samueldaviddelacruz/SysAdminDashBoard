@@ -11,6 +11,11 @@ var currentdisks = [];
 const port = (process.env.PORT || 5000);
 var _interval = 1;
 var TOTAL_PERCENT = 100;
+
+function isEmpty(obj) {
+    return Object.getOwnPropertyNames(obj).length == 0;
+}
+
 (function (ResourceMonitor) {
 
     ResourceMonitor.init = function (interval) {
@@ -22,8 +27,15 @@ var TOTAL_PERCENT = 100;
         app.get('/availableDisks', function (req, res) {
 
             getDisks(function (error, disks) {
-                console.log('disks? ', disks);
+
                 var _resp = {error, disks};
+
+                if (isEmpty(_resp.disks)) {
+
+                    _resp.error = "empty disks";
+                    return res.send(_resp);
+                }
+
 
                 currentdisks = _resp.disks;
 
