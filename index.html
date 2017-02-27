@@ -23,15 +23,15 @@ var socket = io();
       getTotalNumberOfCPU();  
       getAvailableDisks();           
      });
-function getTotalNumberOfCPU(){   
- $.get('cpucount',function(cpuCount){
+function getTotalNumberOfCPU(){
+    $.get('/cpucount', function (cpuCount) {
     // console.log(cpuCount.count)
     initCpuChart(cpuCount.count);
     initRamChart();
  })
 }
-function getAvailableDisks(){   
- $.get('availableDisks',function(disks){
+function getAvailableDisks(){
+    $.get('/availableDisks', function (disks) {
      initDisksChart(disks);
      console.log(disks);  
  })
