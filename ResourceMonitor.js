@@ -17,15 +17,15 @@ var TOTAL_PERCENT = 100;
 
         app.get('/cpucount', function (req, res) {
             var cpuCount = {count: os.cpus().length};
-
-
             res.send(cpuCount);
         });
         app.get('/availableDisks', function (req, res) {
 
             getDisks(function (error, disks) {
-                currentdisks = disks;
-                res.send(disks);
+                var _resp = {error, disks};
+
+                currentdisks = _resp.disks;
+                return res.send(_resp);
             });
 
         });
@@ -183,22 +183,23 @@ var TOTAL_PERCENT = 100;
     }
 
     function emitDiskSpace(){
+        if (currentdisks.length) {
+            currentdisks.forEach(function (disk) {
+                var mountPath = disk.mountpoint.split(',')[0];
 
-        currentdisks.forEach(function(disk){
-            var mountPath = disk.mountpoint.split(',')[0];
+                diskspace.check(mountPath, function (err, total, free, status) {
+                    if (err) {
+                        console.log(err)
+                    }
+                    var freeDiskPercent = (free / total) * 100
+                    var usedDiskSpacePercent = TOTAL_PERCENT - freeDiskPercent;
+                    io.emit(mountPath, usedDiskSpacePercent);
 
-            diskspace.check(mountPath, function (err, total, free, status) {
-                if (err) {
-                    console.log(err)
-                }
-                var freeDiskPercent = (free / total) * 100
-                var usedDiskSpacePercent = TOTAL_PERCENT - freeDiskPercent;
-                io.emit(mountPath, usedDiskSpacePercent);
+                    //console.log('used space for drive %s %d %',mountPath,usedDiskSpacePercent);
+                });
 
-                //console.log('used space for drive %s %d %',mountPath,usedDiskSpacePercent);
             });
-
-        });
+        }
     }
     function getDisks(ongetDisks){
 

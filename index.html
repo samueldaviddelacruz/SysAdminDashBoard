@@ -31,9 +31,12 @@ function getTotalNumberOfCPU(){
  })
 }
 function getAvailableDisks(){
-    $.get('/availableDisks', function (disks) {
-     initDisksChart(disks);
-     console.log(disks);  
+    $.get('/availableDisks', function (response) {
+        console.log(response);
+
+        if (!response.error) {
+            initDisksChart(response.disks);
+        }
  })
 }
    
