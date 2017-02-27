@@ -58,8 +58,8 @@ var server = require('http').createServer(function(request, response) {
     response.writeHead(404);
     response.end();
 });
-    server.listen(port, function () {
-        console.log((new Date()) + ' Server is listening on port ' + port);
+    server.listen(5000, function () {
+        console.log((new Date()) + ' Classic websocket on port ' + 5000);
 });
 
 wsServer = new WebSocketServer({
