@@ -25,7 +25,7 @@ var socket = io();
      });
 function getTotalNumberOfCPU(){
     $.get('/cpucount', function (cpuCount) {
-    // console.log(cpuCount.count)
+        console.log(cpuCount.count);
     initCpuChart(cpuCount.count);
     initRamChart();
  })

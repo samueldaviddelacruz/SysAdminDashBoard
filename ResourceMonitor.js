@@ -16,7 +16,9 @@ var TOTAL_PERCENT = 100;
     ResourceMonitor.init = function (interval) {
 
         app.get('/cpucount', function (req, res) {
-            var cpuCount = {count: os.cpus().length}
+            var cpuCount = {count: os.cpus().length};
+
+
             res.send(cpuCount);
         });
         app.get('/availableDisks', function (req, res) {
