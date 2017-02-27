@@ -7,7 +7,7 @@ var drivelist = require('drivelist');
 var diskspace = require('diskspace');
 var oldcpus = os.cpus();
 var connections = [];
-var currentdisks = []
+var currentdisks = [];
 var _interval = 1;
 var TOTAL_PERCENT = 100;
 (function (ResourceMonitor) {
