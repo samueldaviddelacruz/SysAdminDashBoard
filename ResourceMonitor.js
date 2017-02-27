@@ -22,9 +22,12 @@ var TOTAL_PERCENT = 100;
         app.get('/availableDisks', function (req, res) {
 
             getDisks(function (error, disks) {
+                console.log('disks? ', disks);
                 var _resp = {error, disks};
 
                 currentdisks = _resp.disks;
+
+
                 return res.send(_resp);
             });
 
