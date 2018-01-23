@@ -1,15 +1,22 @@
 # SysAdminDashBoard
-just a little project that emits some system data through sockets.
+Dashboard demo project to learn more about node.js and websockets.
 
-before running, on root folder(where index.js is) run :
+## How to Run the project
+Install dependencies:
+```
+npm install
+```
+Then proceed to build and run the project
+```
+node index.js
+```
+project will be live running on localhost:3000
 
-$ npm install 
+## Built With
 
-then run 
+* [Node.js](https://reactjs.org/) - As backend service
+* [Socket.io](socket.io) - For websockets management
 
-$ node index.js
-
-and navigate to localhost:3000
-
-enjoy some pretty bars going up and down :)
+## Demo
+* You can try it out here => [Demo](https://hidden-fjord-77014.herokuapp.com/) 
 
